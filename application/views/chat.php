@@ -31,10 +31,22 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	 <div class="grid_4">
 	 	<section class="box widget chatapplication--users">
 
-	 	  <div id="chatapplication--session">
-	 	    <a href class="settings btn btn-primary"><em class="icon-cog"></em></a>
+	 	  <div id="chatapplication--session" class="userSession{{userSessionID}}">
+
+		    <div class="chatapplication--session__header">
+		 	  	<div class="wrapper-dropbox">
+				  <div class="dd wrapper-dropdown-1" tabindex="1">
+					<span class="icon-cog"></span>
+				    <ul class="dropdown">
+				       <li><a ng-click="editProfile()"><i class="ion-person"></i>&nbsp; Edit profile</a></li>
+				       <li><a onclick="window.location.href='logout'"><i class="ion-power"></i>&nbsp; Logout</a></li>
+				    </ul>
+				  </div>
+				</div>
+			</div>
+
 	 	  	<div class="avatar">
-	 	  	  <img ng-src="{{picture}}" alt="">
+	 	  	  <img ng-src="assets/uploads/{{picture}}" alt="">
 	 	  	</div>
 	 	  	<div class="details">
 	 	  		<p>{{fullname}}</p>
@@ -48,7 +60,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	      	<li ng-repeat="user in users" ng-click="openChat(user.uid)" data-notifications="notify{{user.uid}}">
 
 	      	  <div class="avatar">
-	      	  	<img ng-src="{{user.picture}}" alt="">
+	      	  	<img ng-src="assets/uploads/{{user.picture}}" alt="">
 	      	  </div>
 	      	  <div class="details">
 	      	  	<p class="fullname">{{user.nickname}}</p>
@@ -68,8 +80,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 			  <div class="message---header">
 			  	<div class="header--controls">
 			  	  <div class="wrapper-dropbox">
-			  	    <div id="dd" class="wrapper-dropdown-1" tabindex="1">
-						<span class="icon-cog"></span>
+			  	    <div class="dd wrapper-dropdown-1" tabindex="1">
+						<span class="ion-navicon-round"></span>
 					    <ul class="dropdown">
 					       <li><a href="javascript:void(0)" ng-click="cleanWindow()"><i class="ion-trash-a"></i>&nbsp; Clean window</a></li>
 					       <li><a href="javascript:void(0)" ng-click="closeChat()"><i class="ion-power"></i>&nbsp; Close chat</a></li>
@@ -78,7 +90,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 				  </div>
 			  	</div>
 			  	<div class="header--avatar">
-			  		<img ng-src="{{ChatPictureUser}}" alt="">
+			  		<img ng-src="assets/uploads/{{ChatPictureUser}}" alt="">
 			  	</div>
 			  	<div class="header--content">
 			  		<p>{{ChatNickname}} <small id="TypingMessageHeader{{chatID}}" class="istyping"></small></p>
@@ -107,6 +119,31 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 	 	</section>
 	 </div>
+	
+	<div class="modal">
+	  <div class="modal-content">
+		<div class="modal-close"><em class="ion-close"></em></div>
+		<form role="editProfile" enctype="multipart/data-form">
+
+	  	  <div class="form-picure-alter">
+	  		<div class="modal-avatar"></div>
+	  		<label for="uploadPicture" class="btn btn-primary btn-large">Choose picture</label>
+	  	    <input id="uploadPicture" name="InputPicture" type="file" fileread="uploadpicture" style="display: none;" />
+	  	  </div>
+
+	  	  <div class="form-user-informations">
+	  		<input type="text" name="InputNickname" placeholder="Nickname">
+	  		<input type="text" placeholder="Username" disabled="">
+	  		<input type="hidden" name="InputUsername">
+	  		<input type="text" name="InputPassword" placeholder="Password">	
+	  	  </div>
+		  
+		  <label for="UpdateProfile" class="btn btn-primary btn-large">Update profile</label>
+	  	  <input id="UpdateProfile" type="submit" style="display: none;" />
+	  	</form>
+
+	  </div>
+	</div>
 
 	</div>
 

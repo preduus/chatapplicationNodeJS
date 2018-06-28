@@ -10,6 +10,8 @@ $route['usersonline']   = 'ChatApplication/usersOnline';
 $route['getmessages']   = 'ChatApplication/getMessages';
 $route['deletemessage'] = 'ChatApplication/deleteMessage';
 
+$route['updateProfile'] = 'ChatApplication/updateProfile';
+
 $route['signin'] = 'ChatApplication/signin';
 $route['signin/action'] = 'ChatApplication/signin_action';
 

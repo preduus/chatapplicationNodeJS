@@ -47,6 +47,8 @@ io.sockets.on("connection", function (socket) {
 		   	 var details = {
 		   	 	'uid'	   : rows[0].uid,
 		   	 	'nickname' : rows[0].nickname,
+		   	 	'username' : rows[0].username,
+		   	 	'password' : rows[0].password,
 		   	 	'picture'  : rows[0].picture,
 		   	 	'status'   : 'connected'
 		   	 }
@@ -64,6 +66,8 @@ io.sockets.on("connection", function (socket) {
 		   	 var details = {
 		   	 	'uid'	   : rows[0].uid,
 		   	 	'nickname' : rows[0].nickname,
+		   	 	'username' : rows[0].username,
+		   	 	'password' : rows[0].password,
 		   	 	'picture'  : rows[0].picture,
 		   	 	'status'   : 'connected'
 		   	 }
@@ -71,9 +75,26 @@ io.sockets.on("connection", function (socket) {
 
 		});
 	}
+
 	function allUsersConnections(){
 		io.emit('users connections', connections);
 	}
+
+	socket.on('user updates', function(data){
+		conn.query("SELECT * FROM `users` WHERE `uid`='"+ data +"' ", function(err, rows, fields){
+
+		   	 var details = {
+		   	 	'uid'	   : rows[0].uid,
+		   	 	'nickname' : rows[0].nickname,
+		   	 	'picture'  : rows[0].picture,
+		   	 	'status'   : 'connected'
+		   	 }
+		   	 io.emit("user list as updated", details);
+		   	 socket.emit("user session as updated", details);
+
+		});
+	});
+
 	function get_ArrKey(obj, val) {
 	    for(var key in obj) {
 	        if(obj[key] === val && obj.hasOwnProperty(key)) {
@@ -120,7 +141,12 @@ io.sockets.on("connection", function (socket) {
 		var idd = get_ArrKey(users, id);
 		var params = {message: msg, sender: users[socket.id], receiver: id, date: $now}
 		var query = conn.query('INSERT INTO messages SET ?', params, function(error, result, fields){
-			socket.broadcast.to(idd).emit('recent message', {nickname: nicknames[socket.id], message: msg, receiver: id, sender: users[socket.id], now: $now });
+			conn.query("SELECT * FROM `users` WHERE `uid`='"+ users[socket.id] +"' ", function(err, rows, fields){
+
+		   	 socket.broadcast.to(idd).emit('recent message', {nickname: nicknames[socket.id], message: msg, receiver: id, sender: users[socket.id], now: $now, picture: rows[0].picture });
+
+		   });
+			
 		});
 	});
 

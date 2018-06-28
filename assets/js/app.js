@@ -22,9 +22,32 @@ app.directive("timeAgo", function($compile) {
   };
 });
 
+app.directive("fileread", [function () {
+		return {
+		 scope: {
+		     fileread: "="
+		 },
+		 link: function (scope, element, attributes) {
+		   element.bind("change", function (changeEvent) {
+		     var reader = new FileReader();
+		     if(reader)
+		     reader.onload = function (loadEvent) {
+		       scope.$apply(function () {
+		         scope.fileread = loadEvent.target.result;
+		         $(".modal-avatar").html('<img src="'+ loadEvent.target.result +'" alt="" />');
+		       });
+		     }
+		     reader.readAsDataURL(changeEvent.target.files[0]);
+		   });
+		 }
+		}
+}]);
+
 $(".timeago").livequery(function(){ $(this).timeago(); });
 
 app.controller('mainController', ['$scope','$http', 'socket', function ($scope, $http, socket) {
+
+	$scope.userSessionID = uid;
 
 	var height = 0;
 
@@ -39,14 +62,31 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 	socket.emit('user connected', uid);
 
 	socket.on('details user', function(response){
-		if(response.picture != null){ var pic = response.picture;	}else { var pic = 'https://pbs.twimg.com/profile_images/764222065666723840/YO8CvMyG_200x200.jpg'; }
+		if(response.picture != null && response.picture != ''){ var pic = response.picture;	}else { var pic = 'avatar.jpg'; }
 		$scope.picture  = pic;
 		$scope.fullname = response.nickname;
 		$scope.status   = response.status;
+
+		$scope.editProfile = function(){
+
+		   var $modal 		= angular.element( document.querySelector( '.modal' ) );
+		   var $modalDimiss = angular.element( document.querySelector( '.modal-close' ) );
+
+		   $(".modal-avatar").html('<img src="assets/uploads/'+ pic +'" alt="" />');
+		   $('input[name="InputNickname"]').attr('value', response.nickname);
+		   $('input[name="InputUsername"]').attr('value', response.username);
+		   $('input[placeholder="Username"]').attr('value', response.username);
+
+		   $modal.show('fast');
+		   $modalDimiss.click(function(){
+		   	$modal.hide('fast');
+		   });
+
+	 	}
+
 	});
 
-
-	 socket.on('users connections', function(response){
+	socket.on('users connections', function(response){
 
 	 	var REQ = {
 		  url: 'usersonline',
@@ -65,8 +105,6 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 		  }, function error(error){});
 
 	 });
-
-	 var deleteMessage = angular.element( document.querySelector( '.trashmsg' ) );
 
 	 $(document).on('click','.trashmsg', function(){
 	 	var message_id = $(this).attr('id');
@@ -116,6 +154,25 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 		angular.element( document.querySelector( '.message---textarea textarea' ) ).attr('id', '');
 	 }
 
+	 socket.on('user list as updated', function(response){
+	 	
+	 	for(var index in $scope.users){
+	 		var $userAttr = $scope.users[index];
+	 		if($userAttr.uid == response.uid){
+	 			$scope.users[index].picture  = response.picture;
+	 			$scope.users[index].nickname = response.nickname;
+	 		}
+	 	}
+	 		
+	 });
+
+	 socket.on('user session as updated', function(response){
+	 	
+	 	$scope.picture  = response.picture;
+		$scope.fullname = response.nickname;
+	 		
+	 });
+
 	 socket.on('ready messages done', function(data){
 	 	if(data.update == true){
 	 		$('.readyMessage').addClass('green');
@@ -144,13 +201,18 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 	 	}
 	 });
 
+	 $(document).on('focus', '.textarea', function(e){
+	 	var id = $(this).attr('id');
+	 	socket.emit('ready messages', id);
+	 });
+
 	 $scope.openChat = function(id){
 
 	 	socket.emit('status chatuser', id);
 	 	socket.emit('ready messages', id);
 		socket.on('status', function(data){
 
-		if(data.picture != null){var picture = data.picture;}else{var picture = 'https://pbs.twimg.com/profile_images/764222065666723840/YO8CvMyG_200x200.jpg';}
+		if(data.picture != null && data.picture != ''){var picture = data.picture;}else{var picture = 'avatar.jpg';}
 		  
 		$scope.ChatPictureUser = picture;
 		$scope.ChatNickname = data.nickname;
@@ -192,9 +254,9 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 				 var mid      = chat.uid;
 
 				 if(chat.status == 0){var statusReady = '<span class="readyMessage"><i class="ion-checkmark-round"></i></span>';}else{var statusReady = '<span class="readyMessage green"><i class="ion-checkmark-round"></i></span>';}
-				 if(chat.picture != null){var picture = chat.picture;}else{var picture = 'https://pbs.twimg.com/profile_images/764222065666723840/YO8CvMyG_200x200.jpg';}
+				 if(chat.picture != null && chat.picture != ''){var picture = chat.picture;}else{var picture = 'avatar.jpg';}
 				 
-				 bodyChat.append('<div id="message--'+m_id+'" class="msg--body '+ position +'"> <div class="msg--avatar"> <img src="'+ picture +'" alt=""> </div> <div class="msg--text"> <a id="'+m_id+'" href="javascript:void(0)" class="btn btn-primary trashmsg"><em class="ion-close"></em></a> <span>'+ message +'</span> <p><span class="timeago" title="'+date+'"></span> '+ statusReady +'</p> </div> <div class="clearfix"></div> </div>');
+				 bodyChat.append('<div id="message--'+m_id+'" class="msg--body '+ position +'"> <div class="msg--avatar"> <img src="assets/uploads/'+ picture +'" alt=""> </div> <div class="msg--text"> <a id="'+m_id+'" href="javascript:void(0)" class="btn btn-primary trashmsg"><em class="ion-close"></em></a> <span>'+ message +'</span> <p><span class="timeago" title="'+date+'"></span> '+ statusReady +'</p> </div> <div class="clearfix"></div> </div>');
 				
 				 height = height < bodyChat[0].scrollHeight ? bodyChat[0].scrollHeight : 0;
 	        	 scroll.call(bodyChat, height, this);
@@ -219,12 +281,12 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 		var receiver = response.receiver;
 		var sender   = response.sender;
 		var nickname = response.nickname;
-		var picture  = 'https://pbs.twimg.com/profile_images/764222065666723840/YO8CvMyG_200x200.jpg';
+		if(response.picture != null && response.picture != ''){var picture = response.picture;}else{var picture = 'avatar.jpg';}
 
 		if(textarea.attr('id') == sender){
 
 			bodyChat
-			.append('<div class="msg--body base-receiver"> <div class="msg--avatar"> <img src="'+ picture +'" alt=""> </div> <div class="msg--text"> <a href="javascript:void(0)" class="btn btn-primary trashmsg"><em class="ion-close"></em></a> <span>'+ message +'</span> <p class="timeago" title="'+ now +'"></p> </div> <div class="clearfix"></div> </div>');
+			.append('<div class="msg--body base-receiver"> <div class="msg--avatar"> <img src="assets/uploads/'+ picture +'" alt=""> </div> <div class="msg--text"> <a href="javascript:void(0)" class="btn btn-primary trashmsg"><em class="ion-close"></em></a> <span>'+ message +'</span> <p class="timeago" title="'+ now +'"></p> </div> <div class="clearfix"></div> </div>');
 			bodyChat.animate({ scrollTop: bodyChat.prop("scrollHeight")}, 1000);
 
 		}else{
@@ -269,6 +331,7 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 	});
 
 	$scope.keyCodex = function(event){
+
 		if(event.keyCode == 13){
 
 			var bodyChat       = angular.element( document.querySelector( '#chatting' ) );
@@ -278,24 +341,47 @@ app.controller('mainController', ['$scope','$http', 'socket', function ($scope, 
 			var message 	   = $scope.sendmessage;
 			var str 		   = message.split(" ").join("");
 			var now 		   = moment().format('YYYY-MM-DD HH:mm:ss');
-
+			var pic  		   = $scope.picture;
 			if(str.length > 0){
-			
+				
 				socket.emit('send message', {'id': id, 'message': message});
 				var statusReady = '<span class="readyMessage"><i class="ion-checkmark-round"></i></span>';
 				bodyChat
-				.append('<div class="msg--body base-sender"> <div class="msg--avatar"> <img src="https://pbs.twimg.com/profile_images/764222065666723840/YO8CvMyG_200x200.jpg" alt=""> </div> <div class="msg--text"> <span>'+ message +'</span> <p><span class="timeago" title="'+ now +'"></span> '+ statusReady +'</p> </div> <div class="clearfix"></div> </div>');
+				.append('<div class="msg--body base-sender"> <div class="msg--avatar"> <img src="assets/uploads/'+ pic +'" alt=""> </div> <div class="msg--text"> <span>'+ message +'</span> <p><span class="timeago" title="'+ now +'"></span> '+ statusReady +'</p> </div> <div class="clearfix"></div> </div>');
 				$textarea.val('');
 
 				bodyChat.animate({ scrollTop: bodyChat.prop("scrollHeight")}, 1000);
 		    }else{
 		    	$textarea.effect("shake");
-		    	$textarea.val('');
+		    	$textarea.empty();
+		    	$textarea.val($textarea.val().replace(/^\s*(\n)\s*$/, ''));
 		    	$('.ui-effects-placeholder').remove();
 		    }
-
+		    event.preventDefault();
 		}
-		return false;
 	}
+
+	$(document).on('submit', '[role="editProfile"]', function(e){
+		e.preventDefault();
+		var data = new FormData(this);
+
+		var params = {
+		   url: 'updateProfile',
+	  	   type: 'post',
+	  	   data: data,
+	       cache: false,
+	       contentType: false,
+	       processData: false,
+		   success: function(data){
+		   	if(data.update == true){
+		   		socket.emit('user updates', data.uid);
+		   		swal("Updated!", "Your profile has been updated.", "success");
+		   	}
+		   },
+		   dataType: 'json'	
+		}
+		$.ajax(params);
+
+	});
 
 }])

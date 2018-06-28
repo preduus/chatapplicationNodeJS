@@ -96,7 +96,7 @@ class ChatApplication extends CI_Controller {
 		foreach ($query->result() as $request) {
 
 		 if($uid <> $request->uid):
-		 	$picture = ($request->picture != null) ? $request->picture : 'https://pbs.twimg.com/profile_images/764222065666723840/YO8CvMyG_200x200.jpg';
+		 	$picture = ($request->picture != null) ? $request->picture : 'avatar.jpg';
 			$arr[] = array(
 				'uid' => $request->uid,
 				'nickname' => $request->nickname,
@@ -167,6 +167,43 @@ class ChatApplication extends CI_Controller {
 		}
 
 		echo json_encode($return);
+
+	}
+
+	public function updateProfile(){
+
+		$nickname = $_POST['InputNickname'];
+		$username = $_POST['InputUsername'];
+		$password = isset($_POST['InputPassword']) ? $_POST['InputPassword'] : '';
+
+		if($password != ''){
+			$this->db->set('password', sha1($password));
+		}
+		if(!empty($_FILES)){
+
+			$ext = strtolower(substr($_FILES['InputPicture']['name'],-4));
+	        $picture_hash = sha1(time()) . $ext; 
+	        $dir = 'assets/uploads/';
+	        
+	        if(move_uploaded_file($_FILES['InputPicture']['tmp_name'], $dir.$picture_hash)){
+	        	$this->db->set('picture', $picture_hash);
+	        }
+		}
+
+		$this->db->set('nickname', $nickname);
+
+		$this->db->where("username", $username);
+		$check = $this->db->update('users');
+
+		if($check){
+			$this->db->where('username', $username);
+			$user = $this->db->get('users')->row();
+			
+			echo json_encode(array('update' => true, 'uid' => $user->uid));
+		}else{
+			echo json_encode(array('update' => false));
+		}
+
 
 	}
 

@@ -7,6 +7,72 @@
 .istyping {
   color: blue;
 }
+
+/*  CSS Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 99;
+  background: rgba(0, 0, 0, 0.7);
+  -webkit-transition: all 0.5s 0.5s ease-in-out;
+  transition: all 0.5s 0.5s ease-in-out;
+  display: none;
+}
+.modal-content {
+  padding: 10px;
+  width: 90%;
+  max-width: 500px;
+  min-width: 280px;
+  max-height: 85%;
+  overflow: hidden;
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  z-index: 2;
+  border-radius: 3px;
+  background: #fff;
+  -webkit-transform: translate(-50%, 0);
+  -ms-transform: translate(-50%, 0);
+  transform: translate(-50%, 0);
+  -webkit-transition: all 0.5s ease-in-out;
+  transition: all 0.5s ease-in-out;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+form[role="editProfile"] {
+  text-align: center;
+}
+
+.form-picure-alter {
+  padding: 15px 0;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #ccc;
+}
+
+.form-picure-alter img {
+  width: 90px;
+  height: 90px;
+  margin: 10px;
+}
+
+.form-user-informations {
+  margin: 10px 0;
+  text-align: center;
+  padding: 0 25px;
+}
+
+
+/*  CSS Chat  */
 #chatapplication--main {
   width: 100%;
   height: auto;
@@ -209,6 +275,12 @@
   padding: 15px 5px 15px 5px;
   margin-bottom: 7px;
   border-bottom: 1px solid #dfdfdf;
+}
+
+#chatapplication--session .chatapplication--session__header {
+  width: 35px;
+  position: absolute;
+  right: 5px;
 }
 
 #chatapplication--session .settings {
